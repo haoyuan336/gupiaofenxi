@@ -4,37 +4,63 @@ import datetime
 import json
 d = "20150608"
 befordaycount = 5
-# print(d[0:4])
-# print(d[4:6])
-# print(d[6:8])
-# h = "{}-{}-{}".format(d[0:4],d[4:6],d[6:8])
-# print(h)
 def getData(code, start, end):
     url = "https://q.stock.sohu.com/hisHq?code={}&start={}&end={}".format(code, start, end)
     res = requests.get(url)
     return json.loads(res.text) 
-# print(getData('cn_000002',20150608,20150609))
 def convertWeek(dt):
     week = datetime.datetime.strptime(dt,"%Y-%m-%d").weekday()
     return week
 def getBeforData(index, list, beforCount): 
     data = []
     for i in range(index + 1, index + 1 + beforCount): 
-        data.append(i)
-
+        if i < len(list):
+            data.append(list[i])
     return data
+def connectData(beforData, currentData):
+    # print(beforData)
+    list = []
+    for data in beforData:
+        for i in range(1, 10):
+            # list
+            list.append(data[i])
+    list.append(currentData)
+    return list
+    # return [beforData, currentData]
 
-
-data = getData('cn_000002', 20150608,20150609)[0]['hq']
+data = getData('cn_600519', 20200113,20200720)[0]['hq']
 # print(data)
+allData = []
+indexList = []
 for index in range(0,len(data)) : 
     hq = data[index]
     week = convertWeek(hq[0])
-    print(week)
     if week == 0: 
-        print("周一")
         fiveData = getBeforData(index, data, befordaycount)
+        print(len(fiveData))
         if len(fiveData) == befordaycount: 
+            print('找到了')
+            indexList.append(hq[0])
+            for i in fiveData:
+                print(i[0])
+            d = connectData(fiveData,hq[4])
+            allData.append(d)
+
+
+column = ['num1', 'num2', 'num3', 'num4', 'num5', 'num6', 'num7', 'num8', 'num9']
+columnlist = []
+for i in range(0,5):
+    for col in column:
+        columnlist.append("{}:{}".format(i + 1,col))
+
+columnlist.append("result")
+csvdata = pd.DataFrame(columns=columnlist, index=indexList,data=allData)     
+csvdata.to_csv("/Users/workspace/gupiaofenxi/pythonLearn/test.csv")   
+
+
+# print(allData)    
+# print(len(allData[0]))  
+# for         
             
 # list1 = []
 # for i in range(1, 10): 
